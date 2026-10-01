@@ -1,4 +1,4 @@
-const CACHE_NAME = "utopia-validator-v2";
+const CACHE_NAME = "utopia-validator-v3";
 
 const FILES_TO_CACHE = [
   "./",
