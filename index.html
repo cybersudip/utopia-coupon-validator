@@ -9,21 +9,62 @@
 
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background: #ffffff;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+      color: #7b1e1e;
+    }
+
+    h2 {
+      margin-top: 5px;
+      font-weight: normal;
+    }
+
+    #reader {
+      width: 100%;
+      max-width: 500px;
+      margin: 20px auto;
+    }
+
+    button {
+      padding: 14px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background: #7b1e1e;
+      color: white;
+      cursor: pointer;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 
 <body>
 
-  <h1>Utopia Durgotsav 2026</h1>
+  <h1>UTOPIA DURGOTSAV 2026</h1>
   <h2>Offline Coupon Validator</h2>
 
-  <p id="status">Validator loading...</p>
+  <p id="status">Validator ready.</p>
 
   <button id="scanButton">
     SCAN COUPON
   </button>
+
+  <div id="reader"></div>
 
   <div id="result"></div>
 
