@@ -1,97 +1,124 @@
 const status = document.getElementById("status");
 const result = document.getElementById("result");
 const scanButton = document.getElementById("scanButton");
+const reader = document.getElementById("reader");
 
-let scanner = null;
+let scanning = false;
+let stream = null;
+let animationFrame = null;
 
 scanButton.addEventListener("click", async () => {
+  if (scanning) return;
 
   result.textContent = "";
   status.textContent = "Starting camera...";
 
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    status.textContent = "Camera is not supported on this device.";
-    return;
-  }
-
   try {
-
-    const stream = await navigator.mediaDevices.getUserMedia({
+    stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: { ideal: "environment" }
-      }
+      },
+      audio: false
     });
 
-    stream.getTracks().forEach(track => track.stop());
+    scanning = true;
 
-    status.textContent = "Camera permission granted.";
+    reader.innerHTML = `
+      <video id="video"
+             autoplay
+             playsinline
+             muted
+             style="width:100%;max-width:500px;border-radius:10px;">
+      </video>
+      <canvas id="canvas" style="display:none;"></canvas>
+    `;
 
-    startScanner();
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+
+    video.srcObject = stream;
+
+    status.textContent = "Point camera at coupon QR code";
+
+    video.addEventListener("loadedmetadata", () => {
+      scanFrame(video, canvas, context);
+    });
 
   } catch (error) {
-
     console.error(error);
-
-    status.textContent =
-      "Camera permission is required to scan coupons.";
-
+    status.textContent = "Camera access failed.";
+    result.textContent = error.message;
   }
-
 });
 
-function startScanner() {
 
-  if (scanner) {
-    scanner.stop().catch(() => {});
+function scanFrame(video, canvas, context) {
+
+  if (!scanning) return;
+
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    context.drawImage(
+      video,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    const imageData = context.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    const code = jsQR(
+      imageData.data,
+      imageData.width,
+      imageData.height,
+      {
+        inversionAttempts: "attemptBoth"
+      }
+    );
+
+    if (code) {
+      handleQRCode(code.data);
+      return;
+    }
   }
 
-  scanner = document.createElement("video");
-
-  scanner.setAttribute("autoplay", "");
-  scanner.setAttribute("playsinline", "");
-
-  scanner.style.width = "100%";
-  scanner.style.maxWidth = "500px";
-
-  document.getElementById("reader").innerHTML = "";
-  document.getElementById("reader").appendChild(scanner);
-
-  navigator.mediaDevices.getUserMedia({
-    video: {
-      facingMode: { ideal: "environment" }
-    }
-  }).then(stream => {
-
-    scanner.srcObject = stream;
-
-    status.textContent =
-      "Camera active. QR scanning will be added next.";
-
-  }).catch(error => {
-
-    console.error(error);
-
-    status.textContent =
-      "Unable to access camera.";
-
-  });
+  animationFrame = requestAnimationFrame(
+    () => scanFrame(video, canvas, context)
+  );
 }
 
-if ("serviceWorker" in navigator) {
 
-  window.addEventListener("load", () => {
+function handleQRCode(data) {
 
-    navigator.serviceWorker.register("sw.js")
-      .then(() => {
-        console.log("Service worker registered");
-      })
-      .catch(error => {
-        console.error(
-          "Service worker registration failed:",
-          error
-        );
-      });
+  stopScanner();
 
-  });
+  status.textContent = "QR code detected.";
 
+  result.textContent = data;
+}
+
+
+function stopScanner() {
+
+  scanning = false;
+
+  if (animationFrame) {
+    cancelAnimationFrame(animationFrame);
+    animationFrame = null;
+  }
+
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
 }
