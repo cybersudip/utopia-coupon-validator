@@ -1,10 +1,11 @@
-const CACHE_NAME = "utopia-validator-v1";
+const CACHE_NAME = "utopia-validator-v2";
 
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
   "./app.js",
-  "./manifest.json"
+  "./manifest.json",
+  "./icons/icon.svg"
 ];
 
 self.addEventListener("install", event => {
