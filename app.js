@@ -500,3 +500,12 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 
 }
+
+
+// ===============================
+// Start button
+// ===============================
+
+document
+  .getElementById("scanButton")
+  .addEventListener("click", startScanner);
