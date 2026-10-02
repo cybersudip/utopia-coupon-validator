@@ -242,11 +242,15 @@ function showInvalid() {
 function showMessage(title, text) {
 
   const reader = document.getElementById("reader");
-
   reader.innerHTML = "";
 
-  const result =
-    document.getElementById("result");
+  const result = document.getElementById("result");
+
+  const scanButton = document.getElementById("scanButton");
+
+  if (scanButton) {
+    scanButton.style.display = "none";
+  }
 
   result.innerHTML =
     "<h2>" +
@@ -281,10 +285,14 @@ function resetScanner() {
 
   lastScanned = null;
 
-  const result =
-    document.getElementById("result");
-
+  const result = document.getElementById("result");
   result.innerHTML = "";
+
+  const scanButton = document.getElementById("scanButton");
+
+  if (scanButton) {
+    scanButton.style.display = "block";
+  }
 
   startScanner();
 }
