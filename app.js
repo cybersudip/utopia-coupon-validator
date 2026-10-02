@@ -167,31 +167,36 @@ async function handleQRCode(qrContent) {
   stopCamera();
 
   showMessage(
-    "QR code detected.",
-    "QR CONTENT: " + escapeHtml(qrContent)
+    "VERIFYING COUPON...",
+    "Please wait."
   );
-
-  /*
-   * Stage 2A validation
-   */
-
-  if (!qrContent.startsWith("UD26|")) {
-
-    showInvalid();
-
-    return;
-  }
 
   const parts = qrContent.split("|");
 
-  if (parts.length < 2) {
+  // RSA coupon format:
+  // UD26|COUPON-ID|SIGNATURE
+
+  if (parts.length !== 3) {
 
     showInvalid();
 
     return;
   }
 
+  const eventCode = parts[0];
   const couponId = parts[1];
+  const signature = parts[2];
+
+  // Check event code
+
+  if (eventCode !== "UD26") {
+
+    showInvalid();
+
+    return;
+  }
+
+  // Check coupon ID
 
   if (!couponId) {
 
@@ -199,6 +204,38 @@ async function handleQRCode(qrContent) {
 
     return;
   }
+
+  // Check signature exists
+
+  if (!signature) {
+
+    showInvalid();
+
+    return;
+  }
+
+  // Data that was originally signed
+  const couponData =
+    eventCode + "|" + couponId;
+
+  // Verify RSA signature
+
+  const validSignature =
+    await verifyCouponSignature(
+      couponData,
+      signature
+    );
+
+  if (!validSignature) {
+
+    showInvalid();
+
+    return;
+  }
+
+  // RSA passed.
+  // Now check whether this coupon
+  // has already been redeemed.
 
   const alreadyRedeemed =
     await isRedeemed(couponId);
@@ -209,6 +246,8 @@ async function handleQRCode(qrContent) {
 
     return;
   }
+
+  // First valid use
 
   await markRedeemed(couponId);
 
