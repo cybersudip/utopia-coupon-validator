@@ -7,6 +7,10 @@ let scanning = false;
 let stream = null;
 let animationFrame = null;
 
+if (typeof jsQR !== "function") {
+  document.getElementById("status").textContent =
+    "ERROR: QR decoder library not loaded";
+}
 scanButton.addEventListener("click", async () => {
   if (scanning) return;
 
