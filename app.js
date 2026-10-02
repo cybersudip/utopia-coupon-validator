@@ -281,19 +281,20 @@ function scanFrame() {
         canvas.height
       );
 
-    const code =
-      jsQR(
-        imageData.data,
-        imageData.width,
-        imageData.height
-      );
+    const code = jsQR(
+  imageData.data,
+  imageData.width,
+  imageData.height,
+  {
+    inversionAttempts: "attemptBoth"
+  }
+);
 
-    if (code && code.data) {
-
-      handleQRCode(code.data);
-
-      return;
-    }
+if (code && code.data) {
+  console.log("QR DETECTED:", code.data);
+  handleQRCode(code.data);
+  return;
+}
 
   }
 
