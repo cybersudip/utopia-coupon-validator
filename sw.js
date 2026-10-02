@@ -4,7 +4,9 @@ const FILES_TO_CACHE = [
   "./",
   "./index.html",
   "./app.js",
+  "./jsQR.js",
   "./manifest.json",
+  "./publicKey.js",
   "./icons/icon.svg"
 ];
 
