@@ -249,8 +249,9 @@ function showMessage(title, text) {
   const scanButton = document.getElementById("scanButton");
 
   if (scanButton) {
-    scanButton.style.display = "none";
-  }
+  scanButton.disabled = true;
+  scanButton.style.visibility = "hidden";
+}
 
   result.innerHTML =
     "<h2>" +
@@ -291,8 +292,9 @@ function resetScanner() {
   const scanButton = document.getElementById("scanButton");
 
   if (scanButton) {
-    scanButton.style.display = "block";
-  }
+  scanButton.disabled = false;
+  scanButton.style.visibility = "visible";
+}
 
   startScanner();
 }
