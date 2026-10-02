@@ -184,8 +184,15 @@ async function handleQRCode(qrContent) {
   }
 
   const eventCode = parts[0];
-  const couponId = parts[1];
-  const signature = parts[2];
+const couponId = parts[1];
+const signature = parts[2];
+
+console.log("SIGNATURE LENGTH:", signature.length);
+console.log("SIGNATURE:", signature);
+console.log(
+  "BASE64 VALID:",
+  /^[A-Za-z0-9+/]+={0,2}$/.test(signature)
+);
 
   // Check event code
 
