@@ -7,17 +7,22 @@ let scanning = false;
 let stream = null;
 let animationFrame = null;
 
-if (typeof jsQR !== "function") {
-  document.getElementById("status").textContent =
-    "ERROR: QR decoder library not loaded";
-}
-scanButton.addEventListener("click", async () => {
+scanButton.addEventListener("click", startScanner);
+
+async function startScanner() {
+
   if (scanning) return;
 
   result.textContent = "";
+  reader.innerHTML = "";
+
+  scanButton.disabled = true;
+  scanButton.textContent = "SCANNING...";
+
   status.textContent = "Starting camera...";
 
   try {
+
     stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: { ideal: "environment" }
@@ -28,18 +33,26 @@ scanButton.addEventListener("click", async () => {
     scanning = true;
 
     reader.innerHTML = `
-      <video id="video"
-             autoplay
-             playsinline
-             muted
-             style="width:100%;max-width:500px;border-radius:10px;">
+      <video
+        id="video"
+        autoplay
+        playsinline
+        muted
+        style="
+          width:100%;
+          max-width:500px;
+          border-radius:10px;
+        ">
       </video>
+
       <canvas id="canvas" style="display:none;"></canvas>
     `;
 
     const video = document.getElementById("video");
     const canvas = document.getElementById("canvas");
-    const context = canvas.getContext("2d", { willReadFrequently: true });
+    const context = canvas.getContext("2d", {
+      willReadFrequently: true
+    });
 
     video.srcObject = stream;
 
@@ -50,11 +63,16 @@ scanButton.addEventListener("click", async () => {
     });
 
   } catch (error) {
+
     console.error(error);
+
     status.textContent = "Camera access failed.";
     result.textContent = error.message;
+
+    resetScanner();
+
   }
-});
+}
 
 
 function scanFrame(video, canvas, context) {
@@ -91,28 +109,50 @@ function scanFrame(video, canvas, context) {
     );
 
     if (code) {
+
       handleQRCode(code.data);
       return;
+
     }
+
   }
 
-  animationFrame = requestAnimationFrame(
-    () => scanFrame(video, canvas, context)
+  animationFrame = requestAnimationFrame(() =>
+    scanFrame(video, canvas, context)
   );
 }
 
 
 function handleQRCode(data) {
 
-  stopScanner();
+  stopCamera();
 
   status.textContent = "QR code detected.";
 
-  result.textContent = data;
+  result.innerHTML = `
+    <div style="
+      margin-top:20px;
+      padding:20px;
+      border-radius:10px;
+      background:#f2f2f2;
+      word-break:break-word;
+    ">
+      <div style="font-size:16px;margin-bottom:10px;">
+        QR CONTENT
+      </div>
+
+      <div style="font-size:22px;">
+        ${escapeHtml(data)}
+      </div>
+    </div>
+  `;
+
+  scanButton.disabled = false;
+  scanButton.textContent = "SCAN AGAIN";
 }
 
 
-function stopScanner() {
+function stopCamera() {
 
   scanning = false;
 
@@ -122,7 +162,33 @@ function stopScanner() {
   }
 
   if (stream) {
-    stream.getTracks().forEach(track => track.stop());
+
+    stream.getTracks().forEach(track => {
+      track.stop();
+    });
+
     stream = null;
   }
+
+  reader.innerHTML = "";
+}
+
+
+function resetScanner() {
+
+  stopCamera();
+
+  scanButton.disabled = false;
+  scanButton.textContent = "SCAN COUPON";
+}
+
+
+function escapeHtml(value) {
+
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
