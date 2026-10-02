@@ -309,6 +309,78 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
+function base64ToArrayBuffer(base64) {
+
+  const binaryString = atob(base64);
+
+  const bytes =
+    new Uint8Array(binaryString.length);
+
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] =
+      binaryString.charCodeAt(i);
+  }
+
+  return bytes.buffer;
+}
+
+
+async function importPublicKey() {
+
+  return await crypto.subtle.importKey(
+    "spki",
+    base64ToArrayBuffer(PUBLIC_KEY_BASE64),
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      hash: "SHA-256"
+    },
+    false,
+    ["verify"]
+  );
+}
+
+
+async function verifyCouponSignature(
+  couponData,
+  signatureBase64
+) {
+
+  try {
+
+    const publicKey =
+      await importPublicKey();
+
+    const signature =
+      base64ToArrayBuffer(
+        signatureBase64
+      );
+
+    const data =
+      new TextEncoder().encode(
+        couponData
+      );
+
+    return await crypto.subtle.verify(
+      {
+        name:
+          "RSASSA-PKCS1-v1_5"
+      },
+      publicKey,
+      signature,
+      data
+    );
+
+  } catch (error) {
+
+    console.error(
+      "RSA verification error:",
+      error
+    );
+
+    return false;
+  }
+}
+
 
 /* SCAN COUPON button */
 
